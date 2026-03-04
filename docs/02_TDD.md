@@ -187,16 +187,164 @@ src/api/error.ts:
 - maps API error to typed ApiError:
 code, message, details, status
 
-Endpoint Modules
+### Endpoint Modules
+- services.api.ts
+- workers.api.ts
+- bookings.api.ts
+- reviews.api.ts
+- (future) analytics.api.ts
+- (future) ai.api.ts
 
-services.api.ts
+## 10) Data Fetching & Caching (TanStack Query)
+### Query Keys
+- ['services']
+- ['workers', filters]
+- ['worker', workerId]
+- ['bookings', { role }]
+- ['booking', bookingId]
+- ['reviews', workerId]
+- (phase 2) ['analytics', tenantId, range]
 
-workers.api.ts
+### Cache Strategy (MVP)
+- Services: staleTime = 1h
+- Workers list: staleTime = 2–5m
+- Booking list/details: staleTime = 0–30s (freshness matters)
 
-bookings.api.ts
+### Mutation Strategy
+- Create booking → invalidate bookings list
+- Update status → invalidate booking detail + bookings list
+- Create review → invalidate reviews list + worker profile
 
-reviews.api.ts
+## 11) State Management Rules
+- Server state lives in React Query only
+- Client UI state stays local (useState) or in feature hooks
+- Auth state stays in AuthProvider
+- Avoid global state unless truly needed
 
-(future) analytics.api.ts
+## 12) MSW Mock API Design (Frontend-first)
+### Why MSW
+- Simulates real network requests
+- Allows delays + errors to test robust UI
+- Easy swap to real backend later
 
-(future) ai.api.ts
+## Mock DB
+mocks/db.ts contains seeded:
+- users
+- services
+- workers
+- bookings
+- reviews
+- tenant data (optional)
+
+### Handlers enforce
+- booking transitions
+- permission checks by role
+- pagination + sorting
+- standard error format
+
+### Delays:
+- normal requests: 300–900ms
+- occasional errors (toggle in dev) to test error UI
+
+## 13) Analytics (Recharts) – Phase 2 Design
+### Endpoints (mock now)
+- GET /analytics/bookings?range=7d|30d
+- GET /analytics/acceptance-rate
+- GET /analytics/cancellations
+
+### UI
+Admin dashboard with:
+- bookings per day (line)
+- acceptance rate per service (bar)
+- cancellations (pie)
+- worker leaderboard (table)
+
+Update strategy:
+- polling every 30s (MVP)
+- later: event-driven refresh
+
+## 14) AI Copilot (Streaming) – Phase 3 Design
+### Purpose
+Admin can ask questions like:
+- “Why cancellations increased this week?”
+- “Show bookings trend chart”
+- “Summarize worker reviews”
+
+### Streaming Protocol
+- SSE endpoint: GET /ai/stream?prompt=...
+- UI consumes tokens progressively
+
+### Tool-driven UI (structured)
+LLM output may trigger “tools”:
+- getBookingsSummary(range)
+- getCancellationReasons(range)
+- showChart(type, params)
+
+Even in MVP, you can simulate tool calls in MSW.
+
+## 15) Multi-Tenancy (Optional but Strong)
+### Approach (Level 1)
+- Every entity includes tenantId
+- Requests include header: X-Tenant-Id
+- Backend/MSW filters by tenantId
+- Tenant switcher UI available to admin
+
+## 16) Error Handling Strategy
+### API errors
+Standardized error format, mapped to ApiError.
+
+### UI behavior
+- List pages: LoadingSkeleton, ErrorState, EmptyState
+- Forms: inline field errors + toast for API errors
+- Global: Error Boundary for unexpected crashes
+
+## 17) Security & Quality Practices
+- Role-based route protection
+- Prevent double-submit on booking form
+- Validate inputs (Zod)
+- Keep secrets out of repo (.env.example only)
+- Linting + formatting + pre-commit hooks
+- Conventional commits
+
+## 18) Testing Strategy
+### Unit tests
+- booking state machine
+- utils (formatting/validators)
+
+### Component tests
+- booking creation form (happy + invalid)
+- role-based action buttons
+
+### E2E (later)
+- customer booking flow
+- worker accept + complete flow
+
+## 19) Deployment Plan (Frontend)
+- Deploy to Vercel/Netlify
+- Provide demo tenant login accounts
+- Add screenshots + architecture diagram to README
+
+## 20) Milestones
+### Week 1
+- Setup architecture, routes, providers, MSW
+- Services list, worker list, worker profile
+
+### Week 2
+- Booking create, booking list, booking detail
+- Worker dashboard accept/reject + status updates
+
+### Week 3
+- Reviews + profile rating updates
+- Tests + documentation polish
+- Deploy MVP
+
+### Week 4+ (optional)
+- Analytics dashboard
+- AI copilot streaming (mock)
+- Multi-tenant switcher
+
+### 21) Open Questions
+- UI library choice (Tailwind/shadcn vs custom)
+- Tenant model (company/branch vs region)
+- Scheduling UI (date picker library)
+- Real backend timeline
