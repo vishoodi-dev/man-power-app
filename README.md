@@ -1,188 +1,73 @@
-# 🚀 ServiceHub
-Production-grade, multi-tenant service marketplace platform with booking state machine, AI-powered copilot (streaming), and real-time analytics dashboard.
-## 📌 Overview
-ServiceHub is a scalable marketplace platform connecting customers with verified service professionals (carpenters, plumbers, electricians, etc.).
+# React + TypeScript + Vite
 
-This project is designed as an industrial-grade system, focusing on:
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-- Clean architecture
+Currently, two official plugins are available:
 
-- Role-based access control
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- Booking lifecycle state modeling
+## React Compiler
 
-- Multi-tenant isolation
+The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
 
-- AI-driven operational insights
+## Expanding the ESLint configuration
 
-- Real-time data visualization
-## ✨ Core Features
-### 🏠 Marketplace
-- Multi-role authentication (Customer, Worker, Admin)
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-- Worker profile & service categories
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-- Booking creation and tracking
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-- Review & rating system
-
-- Status-based UI permissions
-
-### 🔁 Booking State Machine
-Booking lifecycle is strictly modeled to prevent invalid transitions:
-```txt
-PENDING → ACCEPTED → STARTED → COMPLETED
-PENDING → REJECTED
-PENDING/ACCEPTED → CANCELLED
-```
-Rules:
-
-- Workers can accept/reject only in PENDING
-
-- Customers can cancel only in PENDING or ACCEPTED
-
-- Reviews allowed only after COMPLETED
-
-- Invalid transitions are blocked at API level
-
-This ensures predictable and enforceable business logic.
-
-### 📊 Analytics Dashboard (Recharts)
-Admin dashboard includes:
-
-- Bookings per day (Line Chart)
-
-- Acceptance rate by service (Bar Chart)
-
-- Cancellation breakdown (Pie Chart)
-
-- Worker leaderboard
-
-- Completion performance trends
-
-Supports real-time updates (polling / streaming-ready).
-
-### 🤖 AI Copilot (LLM Streaming)
-AI-powered assistant integrated into the admin panel:
-
-- Streaming chat responses (SSE-based)
-
-- Operational insights (e.g., booking trends)
-
-- Review summarization
-
-- Tool-based UI interaction (e.g., “Show bookings chart”)
-
-Designed with explainable outputs and structured responses.
-
-### 🏢 Multi-Tenancy
-Supports tenant isolation using tenantId strategy:
-
-- Each tenant has isolated workers, bookings, and analytics
-
-- Role-based access scoped to tenant
-
-- Prevents cross-tenant data access
-
-- Designed for future subdomain-based tenancy
-
-## 🏗 Architecture
-### Frontend
-- Vite + React + TypeScript
-
-- Feature-based modular architecture
-
-- TanStack Query for server-state management
-
-- React Router for routing
-
-- Recharts for data visualization
-
-- MSW for mock backend simulation
-
-### Backend (Planned / In Progress)
-- NestJS
-
-- PostgreSQL
-
-- JWT Authentication
-
-- Tenant-based filtering
-
-- SSE for AI streaming
-
-## 📂 Project Structure
-```txt
-src/
-  app/
-  api/
-  features/
-    auth/
-    services/
-    workers/
-    bookings/
-    analytics/
-    copilot/
-  shared/
-  mocks/
-```
-Features are isolated and domain-driven.
-
-## 🔐 Role-Based Access Control
-Roles:
-
-- CUSTOMER
-
-- WORKER
-
-- ADMIN
-
-Access is controlled via:
-
-- Route guards
-
-- Conditional UI rendering
-
-- API-level enforcement
-
-## 📦 Installation
-
-```txt
-git clone https://github.com/your-username/servicehub.git
-cd servicehub
-npm install
-npm run dev
-```
-## 🧪 Testing
-- Unit tests (Vitest)
-
-- Component tests (React Testing Library)
-
-- Mock API integration via MSW
-
-Run tests:
-```txt
-npm run test
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## 🚀 Deployment
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-## 📈 Future Improvements
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-- Stripe payment integration
-
-- Real-time booking updates via WebSocket
-
-- AI-based worker recommendation engine
-
-- Push notifications
-
-- Production-ready NestJS backend
-
-- Load testing and performance benchmarking
-
-## 📷 Screenshots
-## 🌐 Live Demo
-## 👤 Author
-Vishoodi Cooray
-
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
